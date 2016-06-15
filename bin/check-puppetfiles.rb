@@ -32,12 +32,6 @@ class CheckPuppetfiles < Sensu::Plugin::CLI
          required: false,
          default: '.'
 
-  include Puppetfiles::Check
+  include Puppetfiles::Bin::Check
 
-  def run
-    load_all_puppetfiles
-    check_modules_version
-    check_modules_repo_location
-    exit
-  end
 end

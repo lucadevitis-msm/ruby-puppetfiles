@@ -80,6 +80,45 @@ module Puppetfiles
           end
         end
       end
+
+      # Update modules details on all loaded files. `updated` must be an
+      # `Array` of `Hash`es with the following keys:
+      #
+      # `:name`: The name of the module (required)
+      # `:version`: The version number (optional)
+      # `:options`: An `Hash` of additional options (optional)
+      #
+      # `:options` keys, if any, are:
+      #
+      # `:git`: The git repo URL (optional)
+      # `:ref`: The git ref string (optional)
+      #
+      # @param updated [Array] An array of modules details
+      def update_modules(updated)
+        puppetfiles.loaded.each do |puppetfile|
+          puppetfile[:modules].each_index do |curernt|
+            name = puppetfile[:modules][curernt][:name]
+            module_ = updated.find_index {|m| m[:name] == name}
+            puppetfile[:modules][curernt] = updated[module_] if module_
+          end
+        end
+      end
+
+      # Dump all the loaded `Puppetfile`s
+      def dump_all
+        puppetfiles.loaded.each do |puppetfile|
+          File.open puppetfile[:path], 'w' do |file|
+            file.print "# Automatically updated on #{Time.now}"
+            puppetfile[:modules].each do |mod_|
+              file.print "\nmod '#{mod_[:name]}'"
+              file.print ", '#{mod_[:version]}'" if mod_[:version]
+              (mod_[:options] || {}).each do |name, value|
+                file.print ",\n  :#{name} => '#{value}'"
+              end
+            end
+          end
+        end
+      end
     end
   end
 end
