@@ -1,5 +1,6 @@
 require 'puppetfiles/version'
 require 'singleton'
+require 'time'
 # @author Luca De Vitis <luca.devitis at moneysupermarket.com>
 
 module Puppetfiles
@@ -81,27 +82,21 @@ module Puppetfiles
         end
       end
 
-      # Update modules details on all loaded files. `updated` must be an
-      # `Array` of `Hash`es with the following keys:
+      # Update a module details on all loaded files.
       #
-      # `:name`: The name of the module (required)
-      # `:version`: The version number (optional)
-      # `:options`: An `Hash` of additional options (optional)
-      #
-      # `:options` keys, if any, are:
-      #
-      # `:git`: The git repo URL (optional)
-      # `:ref`: The git ref string (optional)
-      #
-      # @param updated [Array] An array of modules details
+      # @param updated [Hash] module details
+      # @option updated [String] :name    The name of the module
+      # @option updated [String] :version The version of the module (optional)
+      # @option updated [Hash]   :options Options set for the module
+      #                                   (optional). Currently used keys are:
+      #                                   `:git`: The git repo URL (optional)
+      #                                   `:ref`: The git ref string (optional)
       def update_modules(updated)
         puppetfiles.loaded.each do |puppetfile|
-          puppetfile[:modules].each_index do |curernt|
-            name = puppetfile[:modules][curernt][:name]
-            module_ = updated.find_index {|m| m[:name] == name}
-            puppetfile[:modules][curernt] = updated[module_] if module_
+          puppetfile.select {|m| m[:name] == updated[:name]}.each do |current|
+            current[:version] = updated[:version]
+            current[:options].update(updated[:options] || {})
           end
-        end
       end
 
       # Dump all the loaded `Puppetfile`s
