@@ -14,5 +14,5 @@ YARD::Rake::YardocTask.new
 RSpec::Core::RakeTask.new
 
 # Tasks to run if rake command is called without arguments.
-task spec: [:rubocop, :yard]
+# task spec: [:rubocop, :yard]
 task build: [:clean, :spec]

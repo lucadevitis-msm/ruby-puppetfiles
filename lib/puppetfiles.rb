@@ -9,7 +9,7 @@ module Puppetfiles
   #
   # @param args [#first] List of arguments
   # @return     [String] version
-  def mod_version(args)
+  def mod_version(*args)
     args.first.is_a?(String) ? args.first : ''
   end
 
@@ -17,7 +17,7 @@ module Puppetfiles
   #
   # @param args [#last] List of arguments
   # @return     [Hash]  options
-  def mod_options(args)
+  def mod_options(*args)
     args.last.is_a?(Hash) ? args.last : {}
   end
 
@@ -57,8 +57,8 @@ module Puppetfiles
   #
   # @param (see #Moc::mod)
   def update(name, *args)
-    version = mod_version(args)
-    options = mod_options(args)
+    version = mod_version(*args)
+    options = mod_options(*args)
     updated << loaded.collect do |puppetfile|
       outdated = puppetfiles[:modules].detect { |mod| mod[:name] == name }
       next unless outdated
@@ -72,8 +72,8 @@ module Puppetfiles
   #
   # @param (see #Moc::mod)
   def add(name, *args)
-    version = mod_version(args)
-    options = mod_options(args)
+    version = mod_version(*args)
+    options = mod_options(*args)
     updated << loaded.each do |puppetfile|
       puppetfile[:modules] << {
         name: name,
@@ -131,26 +131,26 @@ module Puppetfiles
     # Mock the `Puppetfile`'s `mod` function call. It actually builds
     # `Repo.puppetfiles.loaded` data structure about loaded `Puppetfile`s and
     # their modules.
-    def mod(name, *args)
+    def Mock.mod(name, *args)
       loaded.last[:modules] << {
         name: name,
-        version: mod_version(args),
-        options: mod_options(args) }
+        version: mod_version(*args),
+        options: mod_options(*args) }
     end
 
     # Mock the `Puppetfile`'s `forge` function call.
     # We are not interested in supporting multiple forges right now.
     # @param _ discarded
-    def forge(_)
+    def Mock.forge(_)
       yield if block_given?
     end
 
     # Mock the `Puppetfile`'s `exclusion` function call.
-    def exclusion(*)
+    def Mock.exclusion(*)
     end
 
     # Mock the `Puppetfile`'s `metadata` function call.
-    def metadata
+    def Mock.metadata
     end
   end
 

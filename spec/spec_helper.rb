@@ -1,6 +1,9 @@
 require 'rspec'
 require 'simplecov'
-SimpleCov.start
+# require 'puppetfiles/check'
+# require 'puppetfiles/bin/check'
+# require 'puppetfiles/bin/update_module'
+# SimpleCov.start
 
 # RSpec.configure do |configure|
 #   configure.after(:suite) do
