@@ -6,18 +6,20 @@ module Puppetfiles
   # `attr_accessor`, for example) that can return a `Hash` of options `:name
   # => value`.
   module Bin
-    module CheckProvisioning
+    # Check the provisioning repo
+    module Check
       include Puppetfiles::Check
+
+      # Report checks result
       def report
-        message = "#{Puppetfiles.loaded.count} Puppetfiles, " +
+        message = "#{Puppetfiles.loaded.count} Puppetfiles, " \
                   "#{Puppetfiles.failures.count} failures"
         ok message if Puppetfiles.failures.empty?
-        details = proc {|info| "\n" + info.join(': ')}
+        details = proc { |info| "\n" + info.join(': ') }
         critical message + Puppetfiles.failures.collect(&details).join
       end
 
-      attr_accessor puppetfiles
-
+      # Run checks against the list of `Puppetfile`s and modules
       def run
         puppetfiles = Dir["#{config[:prefix]}/**/Puppetfile.*"]
         puppetfiles.reject! { |p| p.match(config[:exclude]) }
@@ -26,9 +28,10 @@ module Puppetfiles
             mod[:version] || (mod[:options][:git] && mod[:options][:ref])
           end
           modules 'should came from known git repo' do |mod|
-            !mod[:options][:git] || mod[:options][:git].match(config[:known]))
+            !mod[:options][:git] || mod[:options][:git].match(config[:known])
           end
         end
       end
+    end
   end
 end

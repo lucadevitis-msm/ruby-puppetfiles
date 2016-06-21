@@ -1,14 +1,13 @@
 # rubocop:disable Style/FileName
 # @author Luca De Vitis <luca.devitis at moneysupermarket.com>
 require 'sensu-plugin/check/cli'
-require 'puppetfiles/check'
-
-# See `Puppetfiles::Repo.load_all`
-include Puppetfiles::Mock
+require 'puppetfiles/bin/check'
 
 # This class implements a CLI to `CheckPuppetfiles`. `Sensu::Plugin::CLI` is a
 # pretty handy CLI library.
-class CheckPuppetfiles < Sensu::Plugin::CLI
+class PuppetfilesCheck < Sensu::Plugin::CLI
+  include Puppetfiles::Bin::Check
+
   option :exclude,
          long: '--exclude PATHS',
          short: '-x PATHS',
@@ -31,7 +30,4 @@ class CheckPuppetfiles < Sensu::Plugin::CLI
          description: 'Puppetfile search base path',
          required: false,
          default: '.'
-
-  include Puppetfiles::Bin::Check
-
 end

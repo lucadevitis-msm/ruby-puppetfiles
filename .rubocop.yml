@@ -1,0 +1,37 @@
+AllCops:
+  AutoCorrect: true
+  DisplayCopNames: true
+  DisplayStyleGuide: true
+  ExtraDetails: true
+  Exclude:
+    - 'vendor/**/*'
+
+# Cyclomatic complexity is a measure of source code complexity.
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+# Assignment Branch Condition is strictly a software size metric, although it
+# has often been misconstrued as a complexity metric.
+Metrics/AbcSize:
+  Max: 40
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+Metrics/ClassLength:
+  Max: 150
+
+Metrics/MethodLength:
+  Max: 30
+
+Metrics/ModuleLength:
+  Max: 180
+
+Style/MultilineHashBraceLayout:
+  EnforcedStyle: same_line
+
+Style/MultilineMethodCallBraceLayout:
+  EnforcedStyle: same_line
+
+Style/MultilineArrayBraceLayout:
+  EnforcedStyle: same_line

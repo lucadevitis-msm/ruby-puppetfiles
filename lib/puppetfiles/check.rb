@@ -1,15 +1,6 @@
 require 'puppetfiles'
 # @author Luca De Vitis <luca.devitis at moneysupermarket.com>
 module Puppetfiles
-  class Puppetfiles
-    attr_accessor failures
-    class << self
-      def failures
-        instance.failures ||= []
-      end
-    end
-  end
-
   # This (MixIn) module contains the logic to be performed on loaded
   # `Puppetfile`s. All methods work assuming there is a `config` method (an
   # `attr_accessor`, for example) that can return a `Hash` of options `:name
@@ -26,7 +17,7 @@ module Puppetfiles
     def describe(puppetfiles)
       Puppetfiles.load puppetfiles
       yield
-      respond_to? :report && report
+      respond_to?(:report) && report
     end
 
     # Run a compliance chek on all the modules in a `Puppetfile`
@@ -39,8 +30,8 @@ module Puppetfiles
     #     puppetfile[:modules].count < 10
     #   end
     def they(check, &failing)
-      Puppetfiles.loaded.reject(&failing).each do |puppetfile|
-        Puppetfiles.failures << [check, puppetfile[:path]]
+      loaded.reject(&failing).each do |puppetfile|
+        failures << [check, puppetfile[:path]]
       end
     end
 
@@ -54,10 +45,10 @@ module Puppetfiles
     #     !mod[:git] || mod[:git].match('^https://')
     #   end
     def modules(check, &failing)
-      Puppetfiles.loaded.each do |puppetfile|
+      loaded.each do |puppetfile|
         puppetfile[:modules].reject(&failing).each do |mod|
-          # Easy to read if sorted. `output` can be mocked for testing.
-          Puppetfiles.failures << [check, puppetfile[:path], mod[:name]]
+          # Easy to read if sorted.
+          failures << [check, puppetfile[:path], mod[:name]]
         end
       end
     end
