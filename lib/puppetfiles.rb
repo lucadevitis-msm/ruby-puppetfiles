@@ -9,7 +9,7 @@ module Puppetfiles
   #
   # @param args [#first] List of arguments
   # @return     [String] version
-  def mod_version(*args)
+  def self.mod_version(*args)
     args.first.is_a?(String) ? args.first : ''
   end
 
@@ -17,22 +17,22 @@ module Puppetfiles
   #
   # @param args [#last] List of arguments
   # @return     [Hash]  options
-  def mod_options(*args)
+  def self.mod_options(*args)
     args.last.is_a?(Hash) ? args.last : {}
   end
 
   # @return [Array] The details of the loaded `Puppetfile`s
-  def loaded
+  def self.loaded
     Puppetfiles.instance.loaded
   end
 
   # @return [Array] The details of the modified `Puppetfile`s
-  def updated
+  def self.updated
     Puppetfiles.instance.updated
   end
 
   # @return [Array] The details of the `Puppetfile`s checks failures
-  def failures
+  def self.failures
     Puppetfiles.instance.failures
   end
 
@@ -42,8 +42,7 @@ module Puppetfiles
   # do not raise `NoMethodError`.
   #
   # @param files [Array<String>] The list of paths to load from
-  def load(files)
-    include Puppetfiles::Mock
+  def self.load(files)
     loaded.clear
     files.each do |file|
       if !block_given? || yield(file)
@@ -55,8 +54,8 @@ module Puppetfiles
 
   # Update module `name` on all loaded `Puppetfile`s
   #
-  # @param (see #Moc::mod)
-  def update(name, *args)
+  # @param (see #Mock::mod)
+  def self.update(name, *args)
     version = mod_version(*args)
     options = mod_options(*args)
     updated << loaded.collect do |puppetfile|
@@ -70,11 +69,12 @@ module Puppetfiles
 
   # Add a module to all loaded `Puppetfile`s
   #
-  # @param (see #Moc::mod)
-  def add(name, *args)
+  # @param (see #Mock::mod)
+  def self.add(name, *args)
     version = mod_version(*args)
     options = mod_options(*args)
-    updated << loaded.each do |puppetfile|
+    # FIXME
+    updated += loaded.each do |puppetfile|
       puppetfile[:modules] << {
         name: name,
         version: version,
@@ -85,7 +85,7 @@ module Puppetfiles
   # Rmove module `name` from each loaded `Puppetfile`
   #
   # @param name [String] The name of the module to remove
-  def remove(name)
+  def self.remove(name)
     updated << loaded.collect do |puppetfile|
       puppetfile if puppetfile[:modules].reject! { |m| m[:name] == name }
     end
@@ -97,7 +97,7 @@ module Puppetfiles
   #
   # @param puppetfiles [Array] List of `Puppetfile`s details to dump
   # @return            [Array] List of dumped `Puppetfile`s details
-  def dump(puppetfiles)
+  def self.dump(puppetfiles)
     puppetfiles.each do |puppetfile|
       File.open puppetfile[:path], 'w' do |file|
         file.print "# Automatically dumped on #{Time.now}"
@@ -118,7 +118,7 @@ module Puppetfiles
 
   # Dumps modified `Puppetfile`s and clear `updated`.
   # @see updated
-  def save
+  def self.save
     updated.uniq! { |puppetfile| puppetfile[:path] }
     dump updated
     updated.clear
@@ -131,26 +131,26 @@ module Puppetfiles
     # Mock the `Puppetfile`'s `mod` function call. It actually builds
     # `Repo.puppetfiles.loaded` data structure about loaded `Puppetfile`s and
     # their modules.
-    def Mock.mod(name, *args)
-      loaded.last[:modules] << {
+    def mod(name, *args)
+      ::Puppetfiles.loaded.last[:modules] << {
         name: name,
-        version: mod_version(*args),
-        options: mod_options(*args) }
+        version: ::Puppetfiles.mod_version(*args),
+        options: ::Puppetfiles.mod_options(*args) }
     end
 
     # Mock the `Puppetfile`'s `forge` function call.
     # We are not interested in supporting multiple forges right now.
     # @param _ discarded
-    def Mock.forge(_)
+    def forge(_)
       yield if block_given?
     end
 
     # Mock the `Puppetfile`'s `exclusion` function call.
-    def Mock.exclusion(*)
+    def exclusion(*)
     end
 
     # Mock the `Puppetfile`'s `metadata` function call.
-    def Mock.metadata
+    def metadata
     end
   end
 
@@ -175,3 +175,5 @@ module Puppetfiles
     end
   end
 end
+
+include Puppetfiles::Mock
