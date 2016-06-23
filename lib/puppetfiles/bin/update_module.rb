@@ -8,8 +8,6 @@ module Puppetfiles
   module Bin
     # Update 1 module details in all provided puppetfiles that contain it
     module UpdateModule
-      include Puppetfiles
-
       # Run the module update
       def run
         mod = argv.first
@@ -17,11 +15,11 @@ module Puppetfiles
         version = config[:version]
         keys = [:git, :ref]
         options = keys.map { |k| [k, config[k]] if config[k] }.compact.to_h
-        Puppetfiles.load files
-        Puppetfiles.update mod, version, options
-        Puppetfiles.save
-        ok "#{Puppetfiles.loaded.count} Puppetfiles, " \
-           "#{Puppetfiles.updated.count} updated"
+        ::Puppetfiles.load files
+        ::Puppetfiles.update mod, version, options
+        ::Puppetfiles.save
+        ok "#{::Puppetfiles.loaded.count} Puppetfiles, " \
+           "#{::Puppetfiles.updated.count} updated"
       end
     end
   end

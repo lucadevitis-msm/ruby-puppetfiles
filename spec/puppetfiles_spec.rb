@@ -1,3 +1,4 @@
+# rubocop:disable Style/HashSyntax
 require 'spec_helper'
 require 'puppetfiles'
 require 'tempfile'
@@ -45,7 +46,7 @@ describe Puppetfiles do
       describe ".#{attribute}" do
         instance = Puppetfiles::Puppetfiles.instance
         it 'should return an Array' do
-          expect(instance.send attribute).to be_an(Array)
+          expect(instance.send(attribute)).to be_an(Array)
         end
       end
     end
@@ -75,8 +76,8 @@ describe Puppetfiles do
       it "should modify the last loaded Puppetfile's modules list" do
         mod mod1[:name], mod1[:version]
         mod mod2[:name],
-          :git => mod2[:options][:git],
-          :git => mod2[:options][:ref]
+            :git => mod2[:options][:git],
+            :ref => mod2[:options][:ref]
         modules = mod(mod3[:name], :git => mod3[:options][:git])
         expect(::Puppetfiles.loaded.last[:modules]).to eq(modules)
       end
@@ -96,7 +97,7 @@ describe Puppetfiles do
     [:metadata, :exclusion].each do |function|
       describe ".#{function}" do
         it 'should do nothing' do
-          expect(send function).to be_nil
+          expect(send(function)).to be_nil
         end
       end
     end
@@ -178,7 +179,7 @@ describe Puppetfiles do
     before(:example) do
       puppetfile1[:modules] << mod3
       puppetfile2[:modules] << mod1
-      [puppetfile1, puppetfile2].each {|p| ::Puppetfiles.loaded << p }
+      [puppetfile1, puppetfile2].each { |p| ::Puppetfiles.loaded << p }
     end
     it 'should return the list of modified Puppetfiles (all)' do
       modified = ::Puppetfiles.add(mod2[:name], mod2[:options])
@@ -195,7 +196,7 @@ describe Puppetfiles do
       loaded = ::Puppetfiles.loaded
       updated = ::Puppetfiles.updated
       [modified, loaded, updated].each do |result|
-        result.sort_by! {|p| p[:path] }
+        result.sort_by! { |p| p[:path] }
       end
       expect(loaded).to eq(updated)
       expect(loaded).to eq(modified)
@@ -203,9 +204,9 @@ describe Puppetfiles do
   end
   describe '.remove' do
     before(:example) do
-      [mod3, mod2].each {|m| puppetfile1[:modules] << m}
-      [mod1, mod3].each {|m| puppetfile2[:modules] << m}
-      [puppetfile1, puppetfile2].each {|p| ::Puppetfiles.loaded << p }
+      [mod3, mod2].each { |m| puppetfile1[:modules] << m }
+      [mod1, mod3].each { |m| puppetfile2[:modules] << m }
+      [puppetfile1, puppetfile2].each { |p| ::Puppetfiles.loaded << p }
     end
     it 'should return the list of modified Puppetfiles' do
       expect(::Puppetfiles.remove(mod2[:name])).to eq([puppetfile1])
@@ -223,16 +224,16 @@ describe Puppetfiles do
     it 'should remove the module from all Puppetfiles (declaring it)' do
       ::Puppetfiles.remove(mod1[:name])
       ::Puppetfiles.loaded.each do |puppetfile|
-        found = puppetfile[:modules].find {|m| m[:name] == mod1[:name]}
+        found = puppetfile[:modules].find { |m| m[:name] == mod1[:name] }
         expect(found).to be_falsy
       end
     end
   end
   describe '.update' do
     before(:example) do
-      [mod2.dup, mod1.dup].each {|m| puppetfile1[:modules] << m}
-      [mod1.dup, mod3.dup].each {|m| puppetfile2[:modules] << m}
-      [puppetfile1, puppetfile2].each {|p| ::Puppetfiles.loaded << p }
+      [mod2.dup, mod1.dup].each { |m| puppetfile1[:modules] << m }
+      [mod1.dup, mod3.dup].each { |m| puppetfile2[:modules] << m }
+      [puppetfile1, puppetfile2].each { |p| ::Puppetfiles.loaded << p }
     end
     it 'should return the list of updated Puppetfiles' do
       modified = ::Puppetfiles.update(mod2[:name], :ref => '1.0.1')
@@ -248,9 +249,9 @@ describe Puppetfiles do
     end
     it 'should update the module in any Puppetfiles (decalring it)' do
       ::Puppetfiles.update(mod2[:name], :ref => '1.0.1')
-      found = puppetfile2[:modules].find {|m| m[:name] == mod2[:name]}
+      found = puppetfile2[:modules].find { |m| m[:name] == mod2[:name] }
       expect(found).to be_falsy
-      found = puppetfile1[:modules].find {|m| m[:name] == mod2[:name]}
+      found = puppetfile1[:modules].find { |m| m[:name] == mod2[:name] }
       expect(found).to be_truthy
       expect(found[:options][:ref]).to eq('1.0.1')
     end

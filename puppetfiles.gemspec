@@ -6,18 +6,18 @@ require 'puppetfiles/version'
 Gem::Specification.new do |spec|
   raise 'RubyGems 2.0 or newer is required.' unless spec.respond_to?(:metadata)
   spec.name = 'puppetfiles'
-  spec.version = Ruby::Puppetfiles::VERSION
+  spec.version = Puppetfiles::VERSION
   spec.authors = ['Luca De Vitis']
   spec.email = ['luca.devitis@moneysupermarket.com']
 
-  spec.summary = 'TODO: Write a short summary'
-  spec.description = 'TODO: Write a longer description'
-  spec.homepage = "TODO: Put your gem's website or public repo URL here."
+  spec.summary = 'Write a short summary'
+  spec.description = 'Write a longer description'
+  spec.homepage = 'http://mygemserver.com'
   spec.license = 'MIT'
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
-  spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
+  spec.metadata['allowed_push_host'] = 'http://mygemserver.com'
 
   spec.files = `git ls-files -z`.split("\x0")
   spec.files.reject! { |f| f.match(%r{^(test|spec|features)/}) }

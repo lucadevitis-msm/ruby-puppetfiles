@@ -37,9 +37,10 @@ module Puppetfiles
   # @param files [Array<String>] The list of paths to load from
   def self.load(files)
     loaded.clear
-    files.collect do |file|
+    files.map do |file|
       loaded << { path: file, modules: [] }
       Kernel.load(file)
+      loaded.last
     end
   end
 
