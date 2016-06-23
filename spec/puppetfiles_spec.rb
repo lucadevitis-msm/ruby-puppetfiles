@@ -14,7 +14,11 @@ describe Puppetfiles do
   let(:mod2) { {
     name: 'mod2',
     version: '',
-    options: { git: 'URL', ref: 'whatever' } } }
+    options: { git: 'git@github.com:user/repo.git', ref: '1.0' } } }
+  let(:mod3) { {
+    name: 'mod3',
+    version: '',
+    options: { git: 'https://github.com/user/repo', ref: 'master' } } }
   describe Puppetfiles::Puppetfiles do
     # This is a perfect example of unnecessary 'example'. Testing the Singleton
     # implementation is something that should be done by the Ruby team on the
@@ -43,13 +47,16 @@ describe Puppetfiles do
           modules: [] }
       end
       it 'should load a module details' do
-        mod 'mod1', '1.0'
-        mod 'mod2',
-          :git => 'URL',
-          :ref => 'whatever'
-        expect(::Puppetfiles.loaded.last[:modules].count).to eq(2)
+        mod mod1[:name], mod1[:version]
+        mod mod2[:name],
+          :git => mod2[:options][:git],
+          :ref => mod2[:options][:ref]
+        mod mod3[:name],
+          :git => mod3[:options][:git],
+          :ref => mod3[:options][:ref]
+        expect(::Puppetfiles.loaded.last[:modules].count).to eq(3)
         expect(::Puppetfiles.loaded.last[:modules].first).to eq(mod1)
-        expect(::Puppetfiles.loaded.last[:modules].last).to eq(mod2)
+        expect(::Puppetfiles.loaded.last[:modules].last).to eq(mod3)
       end
     end
     describe '.forge' do
@@ -119,20 +126,20 @@ describe Puppetfiles do
     before(:example) { @tmp = Tempfile.new('Puppetfile.dump') }
     after(:example) { @tmp.close! }
     it 'should dump a list puppet modules details' do
-      ::Puppetfiles.dump([{ path: @tmp.path, modules: [mod1, mod2] }])
+      ::Puppetfiles.dump([{ path: @tmp.path, modules: [mod1, mod2, mod3] }])
       ::Puppetfiles.load([@tmp.path])
       expect(::Puppetfiles.loaded.count).to eq(1)
       expect(::Puppetfiles.loaded.first[:path]).to eq(@tmp.path)
-      expect(::Puppetfiles.loaded.first[:modules].count).to eq(2)
+      expect(::Puppetfiles.loaded.first[:modules].count).to eq(3)
       expect(::Puppetfiles.loaded.first[:modules].first).to eq(mod1)
-      expect(::Puppetfiles.loaded.first[:modules].last).to eq(mod2)
+      expect(::Puppetfiles.loaded.first[:modules].last).to eq(mod3)
     end
   end
   describe '.save' do
     before(:example) { @tmp = Tempfile.new('Puppetfile.save') }
     after(:example) { @tmp.close! }
     it 'should dump the updated puppet modules' do
-      puppetfile = { path: @tmp.path, modules: [mod1, mod2] }
+      puppetfile = { path: @tmp.path, modules: [mod1, mod2, mod3] }
       ::Puppetfiles.updated << puppetfile
       ::Puppetfiles.save
       expect(File.read(@tmp.path).size).to be > 0
@@ -143,23 +150,34 @@ describe Puppetfiles do
     end
   end
   describe '.add' do
+    let(:first) { { path: 'Puppetfile.first', modules: [mod1] } }
+    let(:last) { { path: 'Puppetfile.last', modules: [mod2] } }
+    it 'should add a module to all loaded Puppetfiles' do
+      ::Puppetfiles.loaded << first
+      ::Puppetfiles.loaded << last
+      expect(::Puppetfiles.add(mod3[:name], mod3[:options])).to \
+        eq(::Puppetfiles.loaded)
+      expect(::Puppetfiles.updated.first[:modules].count).to eq(2)
+      expect(::Puppetfiles.updated.first[:modules]).to eq([mod1, mod3])
+      expect(::Puppetfiles.updated.last[:modules]).to eq([mod2, mod3])
+    end
+  end
+  describe '.remove' do
     let(:first) { { path: 'Puppetfile.first', modules: [] } }
     let(:last) { { path: 'Puppetfile.last', modules: [] } }
     it 'should add a module to all loaded Puppetfiles' do
       ::Puppetfiles.loaded << first
       ::Puppetfiles.loaded << last
-      ::Puppetfiles.add(mod1[:name], mod1[:version])
-      ::Puppetfiles.add(mod2[:name], mod2[:options])
-
-      expect(::Puppetfiles.loaded).to eq(::Puppetfiles.updated)
+      expect(::Puppetfiles.add(mod1[:name], mod1[:version])).to \
+        eq(::Puppetfiles.loaded)
+      expect(::Puppetfiles.add(mod2[:name], mod2[:options])).to \
+        eq(::Puppetfiles.updated)
       expect(::Puppetfiles.updated.first[:modules].count).to eq(2)
       expect(::Puppetfiles.updated.first[:modules]).to eq([mod1, mod2])
       first_modules = ::Puppetfiles.updated.first[:modules]
       last_modules = ::Puppetfiles.updated.last[:modules]
       expect(first_modules).to eq(last_modules)
     end
-  end
-  describe '.remove' do
   end
   describe '.update' do
   end

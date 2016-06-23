@@ -54,40 +54,45 @@ module Puppetfiles
 
   # Update module `name` on all loaded `Puppetfile`s
   #
-  # @param (see #Mock::mod)
+  # @param (see #Puppetfile::Mock::mod)
+  # @return [Array<Hash>] The list of updated `Puppetfile`s
   def self.update(name, *args)
     version = mod_version(*args)
     options = mod_options(*args)
-    updated << loaded.collect do |puppetfile|
+    loaded.collect do |puppetfile|
       outdated = puppetfiles[:modules].detect { |mod| mod[:name] == name }
       next unless outdated
       outdated[:version] = version
       options.each { |k, v| outdated[:options][k] = v if v }
+      updated << puppetfile unless updated.include?(puppetfile)
       puppetfile
     end.compact
   end
 
   # Add a module to all loaded `Puppetfile`s
   #
-  # @param (see #Mock::mod)
+  # @param (see #Puppetfiles::Mock::mod)
+  # @return [Array<Hash>] The list of updated `Puppetfile`s
   def self.add(name, *args)
     version = mod_version(*args)
     options = mod_options(*args)
-    # FIXME
-    updated += loaded.each do |puppetfile|
+    loaded.each do |puppetfile|
       puppetfile[:modules] << {
         name: name,
         version: version,
         options: options }
+      updated << puppetfile unless updated.include?(puppetfile)
     end
   end
 
   # Rmove module `name` from each loaded `Puppetfile`
   #
   # @param name [String] The name of the module to remove
+  # @return [Array<Hash>] The list of updated `Puppetfile`s
   def self.remove(name)
-    updated << loaded.collect do |puppetfile|
-      puppetfile if puppetfile[:modules].reject! { |m| m[:name] == name }
+    loaded.each do |puppetfile|
+      puppetfile[:modules].reject! { |m| m[:name] == name }
+      updated << puppetfile unless updated.include?(puppetfile)
     end
   end
 
