@@ -31,39 +31,30 @@ module Puppetfiles
     Puppetfiles.instance.updated
   end
 
-  # @return [Array] The details of the `Puppetfile`s checks failures
-  def self.failures
-    Puppetfiles.instance.failures
-  end
-
   # Load all the `Puppetfile`s from the list. If a block is given, then
-  # load all files for which the block returns `true`. You must include
-  # `Puppetfiles::Mock` module at script level so that loaded `Puppetfile`s
-  # do not raise `NoMethodError`.
+  # load all files for which the block returns `true`.
   #
   # @param files [Array<String>] The list of paths to load from
   def self.load(files)
     loaded.clear
-    files.each do |file|
-      if !block_given? || yield(file)
-        loaded << { path: file, modules: [] }
-        Kernel.load(file)
-      end
+    files.collect do |file|
+      loaded << { path: file, modules: [] }
+      Kernel.load(file)
     end
   end
 
   # Update module `name` on all loaded `Puppetfile`s
   #
-  # @param (see #Puppetfile::Mock::mod)
+  # @param (see #mod)
   # @return [Array<Hash>] The list of updated `Puppetfile`s
   def self.update(name, *args)
     version = mod_version(*args)
     options = mod_options(*args)
     loaded.collect do |puppetfile|
-      outdated = puppetfiles[:modules].detect { |mod| mod[:name] == name }
+      outdated = puppetfile[:modules].detect { |mod| mod[:name] == name }
       next unless outdated
       outdated[:version] = version
-      options.each { |k, v| outdated[:options][k] = v if v }
+      options.each { |k, v| outdated[:options][k] = v }
       updated << puppetfile unless updated.include?(puppetfile)
       puppetfile
     end.compact
@@ -90,10 +81,11 @@ module Puppetfiles
   # @param name [String] The name of the module to remove
   # @return [Array<Hash>] The list of updated `Puppetfile`s
   def self.remove(name)
-    loaded.each do |puppetfile|
-      puppetfile[:modules].reject! { |m| m[:name] == name }
+    loaded.select do |puppetfile|
+      next unless puppetfile[:modules].reject! { |m| m[:name] == name }
       updated << puppetfile unless updated.include?(puppetfile)
-    end
+      puppetfile
+    end.compact
   end
 
   # Dump `Puppetfile`s. Use `save` unless you know what you are dumping.
@@ -124,7 +116,6 @@ module Puppetfiles
   # Dumps modified `Puppetfile`s and clear `updated`.
   # @see updated
   def self.save
-    updated.uniq! { |puppetfile| puppetfile[:path] }
     dump updated
     updated.clear
   end
@@ -172,11 +163,6 @@ module Puppetfiles
     # The details of modified `Puppetfile`s
     def updated
       @updated ||= []
-    end
-
-    # The details of `Puppetfile`s checks failures
-    def failures
-      @failures ||= []
     end
   end
 end
