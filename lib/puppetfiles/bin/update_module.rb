@@ -9,7 +9,7 @@ module Puppetfiles
     # Update 1 module details in all provided puppetfiles that contain it
     module UpdateModule
       # Run the module update
-      def run
+      def main
         mod = argv.first
         files = argv.drop(1)
         version = config[:version]
@@ -17,10 +17,10 @@ module Puppetfiles
         options = keys.map { |k| [k, config[k]] if config[k] }.compact.to_h
         ::Puppetfiles.load files
         ::Puppetfiles.update mod, version, options
-        loaded = ::Puppetfiles.loaded.count
+        count = ::Puppetfiles.loaded.count
         updated = ::Puppetfiles.loaded.count
         ::Puppetfiles.save
-        ok "#{loaded} Puppetfiles, `#{mod}' updated on #{updated}"
+        ok "#{count} Puppetfiles loaded, `#{mod}' updated on #{updated}"
       end
     end
   end

@@ -45,7 +45,7 @@ describe Puppetfiles::Bin::UpdateModule do
       UpdateModule.new([mod1[:name], puppetfile.path], version: value)
     end
     it 'should update module version' do
-      expect { script.run }.to raise_error(SystemExit)
+      expect { script.main }.to raise_error(SystemExit)
       expect(script.status).to eq(0)
       loaded = ::Puppetfiles.load [puppetfile.path]
       found = loaded.first[:modules].find { |m| m[:name] == mod1[:name] }
@@ -59,7 +59,7 @@ describe Puppetfiles::Bin::UpdateModule do
         UpdateModule.new([mod2[:name], puppetfile.path], name => value)
       end
       it "should update module option `:#{name}`" do
-        expect { script.run }.to raise_error(SystemExit)
+        expect { script.main }.to raise_error(SystemExit)
         expect(script.status).to eq(0)
         loaded = ::Puppetfiles.load [puppetfile.path]
         found = loaded.first[:modules].find { |m| m[:name] == mod2[:name] }

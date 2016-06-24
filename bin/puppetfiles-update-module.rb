@@ -1,4 +1,4 @@
-# rubocop:disable Style/FileName
+#!ruby
 # @author Luca De Vitis <luca.devitis at moneysupermarket.com>
 require 'sensu-plugin/check/cli'
 require 'puppetfiles/bin/update_module'
@@ -23,4 +23,18 @@ class PuppetfilesUpdateModule < Sensu::Plugin::CLI
          long: '--set-option-ref REF',
          description: 'Set module git ref string',
          required: false
+
+  option :help,
+         long: '--help',
+         description: 'Show this message',
+         on: :tail,
+         boolean: true,
+         show_options: true,
+         exit: 0
+  def output(*args)
+    puts "#{self.class.name}: " + args.join(' ')
+  end
+  def run
+    main
+  end
 end

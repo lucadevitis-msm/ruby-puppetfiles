@@ -1,10 +1,12 @@
 gemspec
 source 'https://rubygems.org' do
-  gem 'rake'
+  gem 'sensu-plugin'
   group :development do
     gem 'rubocop'
     gem 'rspec'
     gem 'coveralls'
+    gem 'bundler', '~> 1.11'
+    gem 'rake', '~> 10.0'
   end
   group :docs do
     gem 'yard'
