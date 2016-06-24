@@ -31,9 +31,11 @@ class PuppetfilesUpdateModule < Sensu::Plugin::CLI
          boolean: true,
          show_options: true,
          exit: 0
+
   def output(*args)
     puts "#{self.class.name}: " + args.join(' ')
   end
+
   def run
     main
   end
