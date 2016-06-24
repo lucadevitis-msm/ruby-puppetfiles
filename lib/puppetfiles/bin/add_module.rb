@@ -7,7 +7,7 @@ module Puppetfiles
   # => value`.
   module Bin
     # Update 1 module details in all provided puppetfiles that contain it
-    module UpdateModule
+    module AddModule
       # Run the module update
       def run
         mod = argv.first
@@ -16,11 +16,10 @@ module Puppetfiles
         keys = [:git, :ref]
         options = keys.map { |k| [k, config[k]] if config[k] }.compact.to_h
         ::Puppetfiles.load files
-        ::Puppetfiles.update mod, version, options
+        ::Puppetfiles.add mod, version, options
         loaded = ::Puppetfiles.loaded.count
-        updated = ::Puppetfiles.loaded.count
         ::Puppetfiles.save
-        ok "#{loaded} Puppetfiles, `#{mod}' updated on #{updated}"
+        ok "#{mod} has been added to #{loaded} Puppetfiles"
       end
     end
   end

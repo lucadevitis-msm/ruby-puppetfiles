@@ -6,21 +6,18 @@ module Puppetfiles
   # `attr_accessor`, for example) that can return a `Hash` of options `:name
   # => value`.
   module Bin
-    # Update 1 module details in all provided puppetfiles that contain it
-    module UpdateModule
-      # Run the module update
+    # Remove 1 module details in all provided puppetfiles that contain it
+    module RemoveModule
+      # Run the module remove procedure
       def run
         mod = argv.first
         files = argv.drop(1)
-        version = config[:version]
-        keys = [:git, :ref]
-        options = keys.map { |k| [k, config[k]] if config[k] }.compact.to_h
         ::Puppetfiles.load files
-        ::Puppetfiles.update mod, version, options
+        ::Puppetfiles.remove mod
         loaded = ::Puppetfiles.loaded.count
         updated = ::Puppetfiles.loaded.count
         ::Puppetfiles.save
-        ok "#{loaded} Puppetfiles, `#{mod}' updated on #{updated}"
+        ok "#{loaded} Puppetfiles, `#{mod}' removed from #{updated}"
       end
     end
   end
