@@ -32,10 +32,13 @@ class PuppetfilesUpdateModule < Sensu::Plugin::CLI
          show_options: true,
          exit: 0
 
+  # Better output
+  # FIXME: need to define a MSM script class subclassing Sensu::Plugin::CLI
   def output(*args)
     puts "#{self.class.name}: " + args.join(' ')
   end
 
+  # FIXME: need to find a way override the run method from Sensu::Plugin::CLI
   def run
     main
   end
