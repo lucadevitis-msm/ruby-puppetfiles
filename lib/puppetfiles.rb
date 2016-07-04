@@ -98,7 +98,8 @@ module Puppetfiles
   def self.dump(puppetfiles)
     puppetfiles.each do |puppetfile|
       File.open puppetfile[:path], 'w' do |file|
-        file.print "# Automatically dumped on #{Time.now}"
+        update_message = ENV['UPDATE_MESSAGE'] || "Updated on #{Time.now}"
+        file.print '# ', update_message
         puppetfile[:modules].sort_by { |mod| mod[:name] }.each do |mod|
           # mod list might be parsed from another source format like JSON
           # or YAML file
