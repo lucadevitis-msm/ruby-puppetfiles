@@ -29,6 +29,11 @@ module Puppetfiles
              description: 'Set module git path string',
              required: false
 
+      option :github_tarball,
+             long: '--set-option-gh-tgz GH_TGZ',
+             description: 'Set module github_tarball option',
+             required: false
+
       option :help,
              long: '--help',
              description: 'Show this message',
@@ -36,6 +41,12 @@ module Puppetfiles
              boolean: true,
              show_options: true,
              exit: 0
+
+      option :print_version,
+             long: '--version',
+             boolean: true,
+             description: 'Print version string',
+             required: false
 
       # Better output
       # FIXME: need to define a MSM script class subclassing Sensu::Plugin::CLI
@@ -46,10 +57,11 @@ module Puppetfiles
       # FIXME: need to find a way override the run method from
       # Sensu::Plugin::CLI
       def run
+        ok ::Puppetfiles::VERSION if config[:print_version]
         mod = argv.first
         files = argv.drop(1)
         version = config[:version]
-        keys = [:git, :ref]
+        keys = [:git, :ref, :path, :github_tarball]
         options = keys.map { |k| [k, config[k]] if config[k] }.compact.to_h
         ::Puppetfiles.load files
         ::Puppetfiles.update mod, version, options
