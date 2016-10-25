@@ -135,25 +135,25 @@ describe Puppetfiles do
       end
     end
   end
-  describe '.load' do
+  describe '.load_all' do
     let(:path) { File.join('spec', 'fixtures', 'Puppetfile.load') }
-    it 'should load files without errors' do
-      expect { ::Puppetfiles.load([path]) }.not_to raise_error
+    it 'should load_all files without errors' do
+      expect { ::Puppetfiles.load_all([path]) }.not_to raise_error
     end
     it 'should turn a Puppetfile into an Hash and store it into .loaded' do
-      ::Puppetfiles.load([path])
+      ::Puppetfiles.load_all([path])
       expect(::Puppetfiles.loaded.last).to be_an(Hash)
       expect(::Puppetfiles.loaded.last[:path]).to eq(path)
       expect(::Puppetfiles.loaded.last[:modules].count).to be > 0
     end
   end
-  describe '.dump' do
+  describe '.dump_all' do
     let(:tmp) { Tempfile.new('Puppetfile.dump') }
     after(:example) { tmp.close! }
-    it 'should dump an Hash as a Puppetfile' do
+    it 'should dump_all an Hash as a Puppetfile' do
       puppetfiles = [{ path: tmp.path, modules: [mod1, mod2, mod3] }]
-      ::Puppetfiles.dump(puppetfiles)
-      ::Puppetfiles.load([tmp.path])
+      ::Puppetfiles.dump_all(puppetfiles)
+      ::Puppetfiles.load_all([tmp.path])
       expect(::Puppetfiles.loaded.count).to eq(1)
       expect(::Puppetfiles.loaded.first[:path]).to eq(tmp.path)
       expect(::Puppetfiles.loaded.first[:modules].count).to eq(3)
@@ -161,38 +161,38 @@ describe Puppetfiles do
       expect(::Puppetfiles.loaded.first[:modules].last).to eq(mod3)
     end
   end
-  describe '.save' do
+  describe '.save_all' do
     before(:example) { @tmp = Tempfile.new('Puppetfile.save') }
     after(:example) { @tmp.close! }
     it 'should dump the updated puppet modules' do
       puppetfile = { path: @tmp.path, modules: [mod1, mod2, mod3] }
       ::Puppetfiles.updated << puppetfile
-      ::Puppetfiles.save
+      ::Puppetfiles.save_all
       expect(File.read(@tmp.path).size).to be > 0
-      expect { ::Puppetfiles.load([@tmp.path]) }.not_to raise_error
+      expect { ::Puppetfiles.load_all([@tmp.path]) }.not_to raise_error
       expect(::Puppetfiles.updated).to be_empty
       expect(::Puppetfiles.loaded.count).to eq(1)
       expect(::Puppetfiles.loaded.first).to eq(puppetfile)
     end
   end
-  describe '.add' do
+  describe '.add_all' do
     before(:example) do
       puppetfile1[:modules] << mod3
       puppetfile2[:modules] << mod1
       [puppetfile1, puppetfile2].each { |p| ::Puppetfiles.loaded << p }
     end
     it 'should return the list of modified Puppetfiles (all)' do
-      modified = ::Puppetfiles.add(mod2[:name], mod2[:options])
+      modified = ::Puppetfiles.add_all(mod2[:name], mod2[:options])
       expect(modified).to eq(::Puppetfiles.loaded)
     end
     it 'should add 1 module to all loaded Puppetfiles' do
-      ::Puppetfiles.add(mod2[:name], mod2[:options])
+      ::Puppetfiles.add_all(mod2[:name], mod2[:options])
       ::Puppetfiles.loaded.each do |puppetfile|
         expect(puppetfile[:modules].last).to eq(mod2)
       end
     end
     it 'should flag all loaded Puppetfile as updated' do
-      modified = ::Puppetfiles.add(mod2[:name], mod2[:options])
+      modified = ::Puppetfiles.add_all(mod2[:name], mod2[:options])
       loaded = ::Puppetfiles.loaded
       updated = ::Puppetfiles.updated
       [modified, loaded, updated].each do |result|
@@ -202,18 +202,18 @@ describe Puppetfiles do
       expect(loaded).to eq(modified)
     end
   end
-  describe '.remove' do
+  describe '.remove_all' do
     before(:example) do
       [mod3, mod2].each { |m| puppetfile1[:modules] << m }
       [mod1, mod3].each { |m| puppetfile2[:modules] << m }
       [puppetfile1, puppetfile2].each { |p| ::Puppetfiles.loaded << p }
     end
     it 'should return the list of modified Puppetfiles' do
-      expect(::Puppetfiles.remove(mod2[:name])).to eq([puppetfile1])
+      expect(::Puppetfiles.remove_all(mod2[:name])).to eq([puppetfile1])
     end
     it 'should flag the modified Puppetfiles as updated' do
       matching = [puppetfile1]
-      updated = ::Puppetfiles.remove(mod2[:name])
+      updated = ::Puppetfiles.remove_all(mod2[:name])
       expect(updated.count).to eq(1)
       expect(updated).to eq(matching)
       expect(updated.first[:path]).to eq(matching.first[:path])
@@ -222,33 +222,33 @@ describe Puppetfiles do
       end
     end
     it 'should remove the module from all Puppetfiles (declaring it)' do
-      ::Puppetfiles.remove(mod1[:name])
+      ::Puppetfiles.remove_all(mod1[:name])
       ::Puppetfiles.loaded.each do |puppetfile|
         found = puppetfile[:modules].find { |m| m[:name] == mod1[:name] }
         expect(found).to be_falsy
       end
     end
   end
-  describe '.update' do
+  describe '.update_all' do
     before(:example) do
       [mod2.dup, mod1.dup].each { |m| puppetfile1[:modules] << m }
       [mod1.dup, mod3.dup].each { |m| puppetfile2[:modules] << m }
       [puppetfile1, puppetfile2].each { |p| ::Puppetfiles.loaded << p }
     end
     it 'should return the list of updated Puppetfiles' do
-      modified = ::Puppetfiles.update(mod2[:name], :ref => '1.0.1')
+      modified = ::Puppetfiles.update_all(mod2[:name], :ref => '1.0.1')
       expect(modified.count).to eq(1)
       expect(modified.first[:path]).to eq(puppetfile1[:path])
     end
     it 'should flag the modified Puppetfiles as updated' do
       matching = [puppetfile1]
-      updated = ::Puppetfiles.update(mod2[:name], :ref => '1.0.1')
+      updated = ::Puppetfiles.update_all(mod2[:name], :ref => '1.0.1')
       expect(updated).to eq(matching)
       expect(updated.first[:path]).to eq(puppetfile1[:path])
       expect(::Puppetfiles.updated.include?(puppetfile1)).to be_truthy
     end
-    it 'should update the module in any Puppetfiles (decalring it)' do
-      ::Puppetfiles.update(mod2[:name], :ref => '1.0.1')
+    it 'should update_all the module in any Puppetfiles (decalring it)' do
+      ::Puppetfiles.update_all(mod2[:name], :ref => '1.0.1')
       found = puppetfile2[:modules].find { |m| m[:name] == mod2[:name] }
       expect(found).to be_falsy
       found = puppetfile1[:modules].find { |m| m[:name] == mod2[:name] }

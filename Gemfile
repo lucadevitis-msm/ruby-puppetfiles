@@ -2,6 +2,7 @@ gemspec
 source 'https://rubygems.org' do
   gem 'sensu-plugin'
   group :development do
+    gem 'serverspec'
     gem 'rubocop'
     gem 'rspec'
     gem 'coveralls'

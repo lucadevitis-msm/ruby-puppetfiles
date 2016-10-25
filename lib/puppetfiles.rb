@@ -31,16 +31,24 @@ module Puppetfiles
     Puppetfiles.instance.updated
   end
 
+  # Load one `Puppetfile` and returns the modules list
+  #
+  # @param file [String]      The Puppetfile path
+  # @return     [Array<Hash>] The list of loaded modules
+  def self.load(file)
+    loaded << { path: file, modules: [] }
+    Kernel.load(file)
+    loaded.last[:modules]
+  end
+
   # Load all the `Puppetfile`s from the list. If a block is given, then
   # load all files for which the block returns `true`.
   #
   # @param files [Array<String>] The list of paths to load from
-  def self.load(files)
+  def self.load_all(files)
     loaded.clear
     files.map do |file|
-      loaded << { path: file, modules: [] }
-      Kernel.load(file)
-      loaded.last
+      load(file)
     end
   end
 
@@ -48,7 +56,7 @@ module Puppetfiles
   #
   # @param (see #mod)
   # @return [Array<Hash>] The list of updated `Puppetfile`s
-  def self.update(name, *args)
+  def self.update_all(name, *args)
     version = mod_version(*args)
     options = mod_options(*args)
     loaded.collect do |puppetfile|
@@ -65,7 +73,7 @@ module Puppetfiles
   #
   # @param (see #Puppetfiles::Mock::mod)
   # @return [Array<Hash>] The list of updated `Puppetfile`s
-  def self.add(name, *args)
+  def self.add_all(name, *args)
     version = mod_version(*args)
     options = mod_options(*args)
     loaded.each do |puppetfile|
@@ -81,12 +89,34 @@ module Puppetfiles
   #
   # @param name [String] The name of the module to remove
   # @return [Array<Hash>] The list of updated `Puppetfile`s
-  def self.remove(name)
+  def self.remove_all(name)
     loaded.select do |puppetfile|
       next unless puppetfile[:modules].reject! { |m| m[:name] == name }
       updated << puppetfile unless updated.include?(puppetfile)
       puppetfile
     end.compact
+  end
+
+  # Dump an `Array` of `Hash`es as the content of Puppetfile
+  #
+  # @param path     [String]      The `Puppetfile`'s path
+  # @param modules  [Array<Hash>] The list of modules
+  def self.dump(path, modules)
+    File.open path, 'w' do |file|
+      update_message = ENV['UPDATE_MESSAGE'] || "Updated on #{Time.now}"
+      file.print '# ', update_message
+      modules.sort_by { |mod| mod[:name] }.each do |mod|
+        # mod list might be parsed from another source format like JSON
+        # or YAML file
+        version = mod[:version] || ''
+        options = mod[:options] || {}
+        file.print "\nmod '#{mod[:name]}'"
+        file.print ", '#{version}'" unless version.empty?
+        options.each do |name, value|
+          file.print ",\n  :#{name} => '#{value}'" if value
+        end
+      end
+    end
   end
 
   # Dump `Puppetfile`s. Use `save` unless you know what you are dumping.
@@ -95,30 +125,16 @@ module Puppetfiles
   #
   # @param puppetfiles [Array] List of `Puppetfile`s details to dump
   # @return            [Array] List of dumped `Puppetfile`s details
-  def self.dump(puppetfiles)
+  def self.dump_all(puppetfiles)
     puppetfiles.each do |puppetfile|
-      File.open puppetfile[:path], 'w' do |file|
-        update_message = ENV['UPDATE_MESSAGE'] || "Updated on #{Time.now}"
-        file.print '# ', update_message
-        puppetfile[:modules].sort_by { |mod| mod[:name] }.each do |mod|
-          # mod list might be parsed from another source format like JSON
-          # or YAML file
-          version = mod[:version] || ''
-          options = mod[:options] || {}
-          file.print "\nmod '#{mod[:name]}'"
-          file.print ", '#{version}'" unless version.empty?
-          options.each do |name, value|
-            file.print ",\n  :#{name} => '#{value}'" if value
-          end
-        end
-      end
+      dump puppetfile[:path], puppetfile[:modules]
     end
   end
 
   # Dumps modified `Puppetfile`s and clear `updated`.
   # @see updated
-  def self.save
-    dump updated
+  def self.save_all
+    dump_all updated
     updated.clear
   end
 
@@ -130,7 +146,7 @@ module Puppetfiles
     # `Repo.puppetfiles.loaded` data structure about loaded `Puppetfile`s and
     # their modules.
     def mod(name, *args)
-      ::Puppetfiles.loaded.last[:modules] << {
+      Puppetfiles.instance.loaded.last[:modules] << {
         name: name,
         version: ::Puppetfiles.mod_version(*args),
         options: ::Puppetfiles.mod_options(*args) }
